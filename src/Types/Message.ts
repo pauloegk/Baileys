@@ -52,9 +52,14 @@ type Mentionable = {
     /** list of jids that are mentioned in the accompanying text */
     mentions?: string[]
 }
+type Contextable = {
+    /** add contextInfo to the message */
+    contextInfo?: proto.IContextInfo
+}
 type ViewOnce = {
     viewOnce?: boolean
 }
+
 type Buttonable = {
     /** add buttons to the message  */
     buttons?: proto.Message.ButtonsMessage.IButton[]
@@ -64,6 +69,9 @@ type Templatable = {
     templateButtons?: proto.IHydratedTemplateButton[]
 
     footer?: string
+}
+type Editable = {
+  edit?: WAMessageKey
 }
 type Listable = {
     /** Sections of the List */
@@ -94,13 +102,13 @@ export type AnyMediaMessageContent = (
         image: WAMediaUpload
         caption?: string
         jpegThumbnail?: string
-    } & Mentionable & Buttonable & Templatable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & WithDimensions)
     | ({
         video: WAMediaUpload
         caption?: string
         gifPlayback?: boolean
         jpegThumbnail?: string
-    } & Mentionable & Buttonable & Templatable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & WithDimensions)
     | {
         audio: WAMediaUpload
         /** if set to true, will send as a `voice note` */
@@ -116,8 +124,8 @@ export type AnyMediaMessageContent = (
         mimetype: string
         fileName?: string
         caption?: string
-    } & Buttonable & Templatable))
-    & { mimetype?: string }
+    } & Contextable & Buttonable & Templatable))
+    & { mimetype?: string } & Editable
 
 export type ButtonReplyInfo = {
     displayText: string
@@ -134,11 +142,11 @@ export type AnyRegularMessageContent = (
 	    text: string
         linkPreview?: WAUrlInfo | null
     }
-    & Mentionable & Buttonable & Templatable & Listable)
+    & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         poll: PollMessageOptions
-    } & Mentionable & Buttonable & Templatable)
+    } & Mentionable & Contextable & Buttonable & Templatable & Editable)
     | {
         contacts: {
             displayName?: string
@@ -190,6 +198,8 @@ export type MessageRelayOptions = MinimalRelayOptions & {
     additionalAttributes?: { [_: string]: string }
     /** should we use the devices cache, or fetch afresh from the server; default assumed to be "true" */
     useUserDevicesCache?: boolean
+    /** jid list of participants for status@broadcast */
+    statusJidList?: string[]
 }
 
 export type MiscMessageGenerationOptions = MinimalRelayOptions & {
@@ -201,6 +211,12 @@ export type MiscMessageGenerationOptions = MinimalRelayOptions & {
     ephemeralExpiration?: number | string
     /** timeout for media upload to WA server */
     mediaUploadTimeoutMs?: number
+    /** jid list of participants for status@broadcast */
+    statusJidList?: string[]
+    /** backgroundcolor for status */
+    backgroundColor?: string
+    /** font type for status */
+    font?: number
 }
 export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
 	userJid: string
@@ -218,6 +234,10 @@ export type MediaGenerationOptions = {
     mediaUploadTimeoutMs?: number
 
     options?: AxiosRequestConfig
+
+    backgroundColor?: string
+
+    font?: number
 }
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
 	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
